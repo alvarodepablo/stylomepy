@@ -6,13 +6,12 @@ import re
 from nltk.tokenize import TweetTokenizer
 from nltk.corpus import stopwords
 
-def styleTokenizer(text, lang='en', token='word', lowercase = True, punct = True, contract = True, stopWords = False):
+def styleTokenizer(text, lang='es', token='word', lowercase = True, punct = True, contract = True, stopWords = True):
     """Splits in words a text.
    
     This function removes undesirable characters and extends English contractions.
     Then it appends each word to a list.
     Returns that list of words.
-
     Options:
         token: Default = 'word'
             If 'word', tokenize the text in words.
@@ -30,7 +29,9 @@ def styleTokenizer(text, lang='en', token='word', lowercase = True, punct = True
             If False: don't remove stopwords
             If True: remove stopwords   
     """
-
+    #Lemmatizacion
+    
+    
     if lowercase:
         text = text.lower()
         
@@ -47,28 +48,26 @@ def styleTokenizer(text, lang='en', token='word', lowercase = True, punct = True
     text = re.sub(r' \'', r' ', text)
 
     if token == 'word':
-        if contract and lang == 'en':
-            tokens = nltk.word_tokenize(text)
-        else:
-            tknzr = TweetTokenizer()
-            tokens = tknzr.tokenize(text)
-        if punct:
-            tokens = ([token for token in tokens if any(c.isalpha() for c in token)])
-
-    if stopWords == True:
-    	tokens = removeStopWords(tokens, lang)
+        
+        tokens = wTokenizer(text, lang, lowercase, punct, contract, stopWords)
 
     elif token == 'sent' or token == 'sentence':
+        
+        tokens = []
 
         if lang == "en":
             sent_detector = nltk.data.load('tokenizers/punkt/english.pickle')
        
         elif lang == "es":
             sent_detector = nltk.data.load('tokenizers/punkt/spanish.pickle')
-
-        tokens = sent_detector.tokenize(text.strip())
-        tokens = [x for x in tokens if x]
-
+        
+        senTokens = sent_detector.tokenize(text.strip())
+        senTokens = [x for x in senTokens if x]
+        
+        for sent in senTokens:
+            aTokens = wTokenizer(sent, lang, lowercase, punct, contract, stopWords)
+            tokens.append(' '.join(aTokens))
+    
     return tokens
 
 def removeStopWords(tokens, lang):
@@ -83,7 +82,21 @@ def removeStopWords(tokens, lang):
     wordsFiltered = []
 
     for token in tokens:
-        if token not in stopWords:
+        if token.lower() not in stopWords:
             wordsFiltered.append(token)
  
     return wordsFiltered
+
+def wTokenizer(text, lang, lowercase, punct, contract, stopWords):
+    
+    if (contract and lang == 'en') or lang == 'es':
+        tokens = nltk.word_tokenize(text)
+    else:
+        tknzr = TweetTokenizer()
+        tokens = tknzr.tokenize(text)
+    if punct:
+        tokens = ([token for token in tokens if any(c.isalpha() or c is '+' for c in token)])
+    if stopWords:
+        tokens = removeStopWords(tokens, lang)
+    
+    return tokens
