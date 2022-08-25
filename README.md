@@ -59,7 +59,7 @@ The available spanish indexes are *INFLESZ* and *Mu*. The available english inde
 
 To analyze the lexical diversity of a text:
 ```python
-style.getVocabularyRichness(index='index')
+style.getVocabularyIndex(index='index')
 ```
 The available indexes are *TTR*, *MSTTR*, *MATTR*, *MTLD* and *HDD*.
 
